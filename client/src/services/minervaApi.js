@@ -15,11 +15,11 @@ export const getUserId = (token) =>
   }).then(res => res.json())
 
 
-  export const getUserInfo = (id, token) =>
-    fetch(`${proxy}?url=${api}/users/${id}&token=Token ${token}`, {
-      method: 'POST',
-      headers: {
-        ...headers,
-        'Content-Type': 'text/html'
-      }
-    }).then(res => res.json())
+export const getUserInfo = (id, token) =>
+  fetch(`${proxy}?url=${api}/users/${id}&token=Token ${token}`, {
+    method: 'POST',
+    headers: {
+      ...headers,
+      'Content-Type': 'text/html'
+    }
+  }).then(res => res.json())

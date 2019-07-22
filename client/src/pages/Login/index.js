@@ -1,47 +1,64 @@
 import React, { Component } from 'react';
+import { Redirect } from 'react-router-dom';
+import { instanceOf } from 'prop-types';
+import { withCookies, Cookies } from 'react-cookie';
 
-import * as LoginAPI from './api.js';
+import { getUserId, getUserInfo } from '../../services/minervaApi.js';
 
 import './styles.css';
 
 class LoginPage extends Component {
+  static propTypes = {
+    cookies: instanceOf(Cookies).isRequired
+  };
+
   constructor(props) {
+    const { cookies } = props;
     super(props);
+
     this.state = {
       token: '',
-      userName: ''
+      redirectHome: cookies.get('id') || cookies.get('token')   // have id or token in cookie, redirect to home
     };
-
-    this.handleInputChange = this.handleInputChange.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
   }
 
-  handleInputChange(event) {
+  handleInputChange = (event) => {
     const target = event.target;
     const name = target.name;
     const value = target.value;
     this.setState({ [name]: value });
   }
 
-  handleSubmit(event) {
+  handleSubmit = (event) => {
     event.preventDefault();
 
-    LoginAPI.getUserId(this.state.token).then((data) => {
+    getUserId(this.state.token).then((data) => {
       if (data.user) {
-        LoginAPI.getUserInfo(data['user'], this.state.token).then((data) => {
-          this.setState({ userName: `${data['last-name']} ${data['first-name']}` });
+        getUserInfo(data['user'], this.state.token).then((data) => {
+          const { cookies } = this.props;
+          if (window.confirm(`Are you ${data['last-name']} ${data['first-name']}?`)) {
+            cookies.set('id', data.id);
+            cookies.set('token', this.state.token);
+            this.setState({ redirectHome: true })
+          }
         })
       }
       else {
-        this.setState({ userName: 'undefined' });
+        window.alert("Invalid token!");
       }
-    })
+    });
+  }
 
+  redirectHome = () => {
+    if (this.state.redirectHome) {
+      return <Redirect to='/' />
+    }
   }
 
   render() {
     return (
       <div className="Login-Page">
+        {this.redirectHome()}
         <form onSubmit={this.handleSubmit}>
           <label>
             Token:
@@ -54,4 +71,4 @@ class LoginPage extends Component {
   }
 }
 
-export default LoginPage;
+export default withCookies(LoginPage);

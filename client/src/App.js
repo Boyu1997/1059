@@ -3,6 +3,8 @@ import { Route, Redirect } from 'react-router-dom';
 import { instanceOf } from 'prop-types';
 import { withCookies, Cookies } from 'react-cookie';
 
+import { getUserId } from './services/minervaApi.js';
+
 import LoginPage from './pages/Login/index.js'
 
 import './App.css';
@@ -15,16 +17,29 @@ class App extends Component {
   };
 
   constructor(props) {
-    super(props);
     const { cookies } = props;
+    super(props);
 
     this.state = {
-      token: cookies.get('token') || 'none'
+      id: Number(cookies.get('id')) || '',
+      token: cookies.get('token') || ''
     };
+
+    // check token and user id, if invalid, remove cookies and redirect to login
+    getUserId(this.state.token).then((data) => {
+      if (!data.user || data.user !== this.state.id) {
+        cookies.remove('id');
+        cookies.remove('token');
+        this.setState({
+          id: '',
+          token: ''
+        });
+      }
+    });
   }
 
   redirectLogin = () => {
-    if (this.state.token === 'none') {
+    if (this.state.id === '' || this.state.token === '') {
       return <Redirect to='/login' />
     }
   }
