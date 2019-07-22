@@ -3,6 +3,8 @@ import { Route, Redirect } from 'react-router-dom';
 import { instanceOf } from 'prop-types';
 import { withCookies, Cookies } from 'react-cookie';
 
+import LoginPage from './pages/Login/index.js'
+
 import './App.css';
 
 
@@ -35,7 +37,7 @@ class App extends Component {
           <h1>1059</h1>
         )} />
         <Route exact path='/login' render={() => (
-          <h1>Login</h1>
+          <LoginPage />
         )} />
       </div>
     );
