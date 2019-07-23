@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 
-import { getHcItems, getHcScore } from '../../services/minervaApi.js';
+import { getHcItems, getHcScores, getHcPerformance } from '../../services/minervaApi.js';
 
 import './styles.css';
 
@@ -15,8 +15,9 @@ class HomePage extends Component {
 
     Promise.all([
       getHcItems(this.props.token),
-      getHcScore(this.props.token)
+      getHcScores(this.props.token)
     ]).then(([items, scores]) => {
+
       // join hc and score by id
       let joinTable = {};
       items.forEach(item => {
@@ -27,26 +28,49 @@ class HomePage extends Component {
           Object.assign(joinTable[score['hc-item']], score);
         }
       });
+      return joinTable;
 
-      let hcItems = {
-        "CS": {},
-        "EA": {},
-        "FA": {},
-        "MC": {}
-      };
+    }).then((joinTable) => {
 
-      Object.keys(joinTable).forEach(key => {
-        hcItems[joinTable[key]['cornerstone-code']][joinTable[key]['hc-item']] = joinTable[key];
-        // {
-        //   'id': item['id'],
-        //   'name': item['name'],
-        //   'hashtag': item['hashtag'],
-        //   'description': item['description'],
-        //   'paragraph': item['paragraph'],
-        //   'examples': item['examples']
-        // };
+      // fetch performance for all hc
+      Promise.all(Object.keys(joinTable).map(key => {
+        return getHcPerformance(this.props.token, joinTable[key]['hc-item']);
+
+      })).then((performances) => {
+
+        // join performance info to table
+        Object.keys(joinTable).forEach((key, index) => {
+          Object.assign(joinTable[key], {'performances': performances[index]});
+        });
+
+        // convert table into
+        let hcItems = {
+          "CS": {},
+          "EA": {},
+          "FA": {},
+          "MC": {}
+        };
+
+        Object.keys(joinTable).forEach(key => {
+          hcItems[joinTable[key]['cornerstone-code']][joinTable[key]['hc-item']] = {
+            'cornerstone-code': joinTable[key]['cornerstone-code'],
+            'description': joinTable[key]['description'],
+            'examples': joinTable[key]['examples'],
+            'hashtag': joinTable[key]['hashtag'],
+            'hc-item': joinTable[key]['hc-item'],
+            'mean': joinTable[key]['mean'],
+            'name': joinTable[key]['name'],
+            'paragraph': joinTable[key]['paragraph'],
+            'performances': joinTable[key]['performances'].map((performance) => {
+              return {
+                'weight': (performance['assignment'] && performance['assignment']['weight'] ? performance['assignment']['weight'] : 1),
+                'score': performance['score']
+              }
+            })
+          };
+        });
+        this.setState({ hcItems: hcItems });
       });
-      this.setState({ hcItems: hcItems });
     });
   }
 

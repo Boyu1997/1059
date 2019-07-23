@@ -45,8 +45,17 @@ export const getHcItems = (token) =>
     return hcItems;
   });
 
-export const getHcScore = (token) =>
+export const getHcScores = (token) =>
   fetch(`${proxy}?url=${api}/hc-index-items?outcomeType=hc&token=Token ${token}`, {
+    method: 'POST',
+    headers: {
+      ...headers,
+      'Content-Type': 'text/html'
+    }
+  }).then(res => res.json())
+
+export const getHcPerformance = (token, id) =>
+  fetch(`${proxy}?url=${api}/outcomeindex/performance?hc-item=${id}&token=Token ${token}`, {
     method: 'POST',
     headers: {
       ...headers,
