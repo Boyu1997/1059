@@ -6,6 +6,7 @@ import { withCookies, Cookies } from 'react-cookie';
 import { getUserId } from './services/minervaApi.js';
 
 import LoginPage from './pages/Login/index.js'
+import HomePage from './pages/Home/index.js'
 
 import './App.css';
 
@@ -45,11 +46,12 @@ class App extends Component {
   }
 
   render() {
+    const { id, token } = this.state;
     return (
       <div className="App">
         {this.redirectLogin()}
         <Route exact path='/' render={() => (
-          <h1>1059</h1>
+          <HomePage id={id} token={token} />
         )} />
         <Route exact path='/login' render={() => (
           <LoginPage />
