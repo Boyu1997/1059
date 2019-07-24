@@ -34,7 +34,7 @@ class LoginPage extends Component {
 
     getUserId(this.state.token).then((data) => {
       if (data.user) {
-        getUserInfo(data['user'], this.state.token).then((data) => {
+        getUserInfo(this.state.token, data['user']).then((data) => {
           const { cookies } = this.props;
           if (window.confirm(`Are you ${data['last-name']} ${data['first-name']}?`)) {
             cookies.set('id', data.id);

@@ -1,36 +1,26 @@
-const proxy = "https://us-central1-boyu-io.cloudfunctions.net/cors-proxy"
-const api = "https://seminar.minerva.kgi.edu/api/v1"
+const server = "https://us-central1-boyu-io.cloudfunctions.net/minerva-1059"
 
 const headers = {
-  'Accept': '*',
+  'Accept': '*/*',
 }
 
 export const getUserId = (token) =>
-  fetch(`${proxy}?url=${api}/outcome-index-item?hc-item=3634&token=Token ${token}`, {
-    method: 'POST',
-    headers: {
-      ...headers,
-      'Content-Type': 'text/html'
-    }
+  fetch(`${server}?type=getUserId&token=${token}`, {
+    method: 'GET',
+    headers: headers
   }).then(res => res.json())
 
 
-export const getUserInfo = (id, token) =>
-  fetch(`${proxy}?url=${api}/users/${id}&token=Token ${token}`, {
-    method: 'POST',
-    headers: {
-      ...headers,
-      'Content-Type': 'text/html'
-    }
+export const getUserInfo = (token, id) =>
+  fetch(`${server}?type=getUserInfo&id=${id}&token=${token}`, {
+    method: 'GET',
+    headers: headers
   }).then(res => res.json())
 
 export const getHcItems = (token) =>
-  fetch(`${proxy}?url=${api}/hc-trees/current?tree&token=Token ${token}`, {
-    method: 'POST',
-    headers: {
-      ...headers,
-      'Content-Type': 'text/html'
-    }
+  fetch(`${server}?type=getHcItems&token=${token}`, {
+    method: 'GET',
+    headers: headers
   }).then(res => res.json()).then(data => {
     let hcItems = [];
     data['hc-group-nodes'].forEach(group => {
@@ -46,19 +36,26 @@ export const getHcItems = (token) =>
   });
 
 export const getHcScores = (token) =>
-  fetch(`${proxy}?url=${api}/hc-index-items?outcomeType=hc&token=Token ${token}`, {
-    method: 'POST',
-    headers: {
-      ...headers,
-      'Content-Type': 'text/html'
-    }
+  fetch(`${server}?type=getHcScores&token=${token}`, {
+    method: 'GET',
+    headers: headers
   }).then(res => res.json())
 
-export const getHcPerformance = (token, id) =>
-  fetch(`${proxy}?url=${api}/outcomeindex/performance?hc-item=${id}&token=Token ${token}`, {
-    method: 'POST',
-    headers: {
-      ...headers,
-      'Content-Type': 'text/html'
-    }
+export const getHcPerformances = (token, id) =>
+  fetch(`${server}?type=getHcPerformances&id=${id}&token=${token}`, {
+    method: 'GET',
+    headers: headers
+  }).then(res => res.json())
+
+export const getAssignmentPage = (token, id) =>
+  fetch(`${server}?type=getAssignmentPage&id=${id}&token=${token}`, {
+    method: 'GET',
+    headers: headers
+  }).then(res => res.json())
+
+
+export const getClassPage = (token, id, hc) =>
+  fetch(`${server}?type=getClassPage&id=${id}&token=${token}&hc=${hc}`, {
+    method: 'GET',
+    headers: headers
   }).then(res => res.json())

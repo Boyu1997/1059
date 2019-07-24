@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 
-import { getHcItems, getHcScores, getHcPerformance } from '../../services/minervaApi.js';
+import { getHcItems, getHcScores, getHcPerformances } from '../../services/minervaApi.js';
+import { calculatePerformance } from '../../services/hcCalculation';
 
 import './styles.css';
 
@@ -35,7 +36,7 @@ class HomePage extends Component {
 
         // fetch performance for all hc
         Promise.all(Object.keys(joinTable).map(key => {
-          return getHcPerformance(this.props.token, joinTable[key]['hc-item']);
+          return getHcPerformances(this.props.token, joinTable[key]['hc-item']);
 
         })).then((performances) => {
 
@@ -43,35 +44,76 @@ class HomePage extends Component {
           Object.keys(joinTable).forEach((key, index) => {
             Object.assign(joinTable[key], {'performances': performances[index]});
           });
-
-          // convert table into
-          let hcItems = {
-            "CS": {},
-            "EA": {},
-            "FA": {},
-            "MC": {}
-          };
-
+          
+          // convert to list and keep only useful info
+          let hcList = [];
           Object.keys(joinTable).forEach(key => {
-            hcItems[joinTable[key]['cornerstone-code']][joinTable[key]['hc-item']] = {
-              'cornerstone-code': joinTable[key]['cornerstone-code'],
-              'description': joinTable[key]['description'],
-              'examples': joinTable[key]['examples'],
-              'hashtag': joinTable[key]['hashtag'],
-              'hc-item': joinTable[key]['hc-item'],
-              'mean': joinTable[key]['mean'],
-              'name': joinTable[key]['name'],
-              'paragraph': joinTable[key]['paragraph'],
-              'performances': joinTable[key]['performances'].map((performance) => {
-                return {
-                  'weight': (performance['assignment'] && performance['assignment']['weight'] ? performance['assignment']['weight'] : 1),
-                  'score': performance['score']
-                }
-              })
-            };
+            hcList.push(joinTable[key]);
           });
-          this.setState({ hcItems: hcItems });
-          sessionStorage.setItem('hcItems', JSON.stringify(hcItems));
+
+          return hcList;
+        }).then((hcList) => {
+          Promise.all(hcList.map(hc => {
+            return Promise.all(hc['performances'].map(performance => {
+              return calculatePerformance(this.props.token, performance, hc['hashtag']);
+            }));
+          })).then((performances) => {
+            
+            // replace new performance info to table
+            hcList.forEach((hc, index) => {
+              hc['performances'] = performances[index];
+            });
+            return hcList;
+          }).then(hcList => {
+            hcList.forEach(hc => {
+              const x = hc['performances'].map(p => {
+                if (p['foregrounded']) {
+                  return 0;
+                }
+                else if (p['score'] >= 3) {
+                  return p['weight'];
+                }
+                else {
+                  return -p['weight'];
+                }
+              }).reduce((a,b) => a + b, 0);
+              const alpha = 0.385;
+              const mu = 0.2;
+              const n = 28;   // n is hard-coded as 28, ideally, it should be dynamically calculated base on num of class taken
+              const v = 1.818;
+              hc['transfer-score'] = 1 + 4 / Math.pow((1 + Math.exp(-alpha * (x - mu * n))), v);
+              hc['x'] = x
+            });
+  
+            // convert table into
+            let hcItems = {
+              "CS": [],
+              "EA": [],
+              "FA": [],
+              "MC": []
+            };
+  
+            hcList.forEach(hc => {
+              hcItems[hc['cornerstone-code']].push({
+                'cornerstone-code': hc['cornerstone-code'],
+                'description': hc['description'],
+                'examples': hc['examples'],
+                'hashtag': hc['hashtag'],
+                'hc-item': hc['hc-item'],
+                'mean': hc['mean'],
+                'name': hc['name'],
+                'paragraph': hc['paragraph'],
+                'performances': hc['performances'],
+                'transfer-score': hc['transfer-score'],
+                'x': hc['x']
+              });
+            });
+
+            // set state and store cache
+            this.setState({ hcItems: hcItems });
+            sessionStorage.setItem('hcItems', JSON.stringify(hcItems));
+
+          });
         });
       });
     }
