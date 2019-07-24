@@ -17,6 +17,25 @@ export const getUserInfo = (token, id) =>
     headers: headers
   }).then(res => res.json())
 
+export const getAllSections = (token, id) =>
+  fetch(`${server}?type=getAllSections&token=${token}`, {
+    method: 'GET',
+    headers: headers
+  }).then(res => res.json()).then(data => {
+    let sectionsTable = {};
+    data.forEach(section => {
+      sectionsTable[section['id']] = {
+        'section-id': section['id'],
+        'course-id': section['course']['id'],
+        'code': section['course']['course-code'],
+        'title': section['course']['title'],
+        'type': section['course']['type'],
+        'is-default': section['is-default']
+      };
+    });
+    return sectionsTable;
+  })
+
 export const getHcItems = (token) =>
   fetch(`${server}?type=getHcItems&token=${token}`, {
     method: 'GET',

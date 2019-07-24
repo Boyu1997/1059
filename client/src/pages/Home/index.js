@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 
-import { getHcItems, getHcScores, getHcPerformances } from '../../services/minervaApi.js';
+import { getHcItems, getHcScores, getAllSections, getHcPerformances } from '../../services/minervaApi.js';
 import { calculatePerformance } from '../../services/hcCalculation';
 
 import './styles.css';
@@ -11,14 +11,16 @@ class HomePage extends Component {
     super(props);
 
     this.state = {
+      sections: sessionStorage.getItem('sections'),
       hcItems: sessionStorage.getItem('hcItems')
     };
 
-    if (!this.state.hcItems) {
+    if (!this.state.sections || !this.state.hcItems) {
       Promise.all([
         getHcItems(this.props.token),
-        getHcScores(this.props.token)
-      ]).then(([items, scores]) => {
+        getHcScores(this.props.token),
+        getAllSections(this.props.token)
+      ]).then(([items, scores, sections]) => {
 
         // join hc and score by id
         let joinTable = {};
@@ -30,6 +32,9 @@ class HomePage extends Component {
             Object.assign(joinTable[score['hc-item']], score);
           }
         });
+
+        this.setState({ sections: sections });
+        sessionStorage.setItem('sections', JSON.stringify(sections));
         return joinTable;
 
       }).then((joinTable) => {
@@ -55,7 +60,7 @@ class HomePage extends Component {
         }).then((hcList) => {
           Promise.all(hcList.map(hc => {
             return Promise.all(hc['performances'].map(performance => {
-              return calculatePerformance(this.props.token, performance, hc['hashtag']);
+              return calculatePerformance(this.props.token, performance, hc['hashtag'], hc['cornerstone-code'], this.state.sections);
             }));
           })).then((performances) => {
             

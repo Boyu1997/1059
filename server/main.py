@@ -27,6 +27,10 @@ def main(request):
                 url = "https://seminar.minerva.kgi.edu/api/v1/users/{:s}".format(request.args['id'])
                 response = requests.get(url, headers={'Authorization': "Token {:s}".format(request.args['token'])})
 
+        if request.args['type'] == "getAllSections":
+            url = "https://seminar.minerva.kgi.edu/api/v1/sections?state=all"
+            response = requests.get(url, headers={'Authorization': "Token {:s}".format(request.args['token'])})
+
         if request.args['type'] == "getHcItems":
             url = "https://seminar.minerva.kgi.edu/api/v1/hc-trees/current?tree"
             response = requests.get(url, headers={'Authorization': "Token {:s}".format(request.args['token'])})
