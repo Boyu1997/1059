@@ -3,7 +3,13 @@ import React, { Component } from 'react';
 import { getHcItems, getHcScores, getAllSections, getHcPerformances } from '../../services/minervaApi.js';
 import { calculatePerformance } from '../../services/hcCalculation';
 
+import { Collapse } from 'antd';
+
+import ScoreTable from './components/scoreTable.js';
+
 import './styles.css';
+
+const { Panel } = Collapse;
 
 class HomePage extends Component {
 
@@ -11,8 +17,8 @@ class HomePage extends Component {
     super(props);
 
     this.state = {
-      sections: sessionStorage.getItem('sections'),
-      hcItems: sessionStorage.getItem('hcItems')
+      sections: JSON.parse(sessionStorage.getItem('sections')),
+      hcItems: JSON.parse(sessionStorage.getItem('hcItems'))
     };
 
     if (!this.state.sections || !this.state.hcItems) {
@@ -125,8 +131,31 @@ class HomePage extends Component {
   }
 
   render() {
+    const { hcItems } = this.state;
     return (
       <div className="Home-Page">
+        <Collapse>
+          <Panel header="Multimodal Communications" key="1">
+            <ScoreTable
+              hcItems={hcItems['MC']}
+            />
+          </Panel>
+          <Panel header="Empirical Analyses" key="2">
+            <ScoreTable
+              hcItems={hcItems['EA']}
+            />
+          </Panel>
+          <Panel header="Formal Analyses" key="3">
+            <ScoreTable
+              hcItems={hcItems['FA']}
+            />
+          </Panel>
+          <Panel header="Complex Systems" key="4">
+            <ScoreTable
+              hcItems={hcItems['CS']}
+            />
+          </Panel>
+        </Collapse>
       </div>
     );
   }

@@ -26,17 +26,20 @@ class App extends Component {
       token: cookies.get('token') || ''
     };
 
+
     // check token and user id, if invalid, remove cookies and redirect to login
-    getUserId(this.state.token).then((data) => {
-      if (!data.user || data.user !== this.state.id) {
-        cookies.remove('id');
-        cookies.remove('token');
-        this.setState({
-          id: '',
-          token: ''
-        });
-      }
-    });
+    if (this.state.id !== '' && this.state.token !== '') {
+      getUserId(this.state.token).then((data) => {
+        if (!data.user || data.user !== this.state.id) {
+          cookies.remove('id');
+          cookies.remove('token');
+          this.setState({
+            id: '',
+            token: ''
+          });
+        }
+      });
+    }
   }
 
   redirectLogin = () => {
