@@ -134,28 +134,36 @@ class HomePage extends Component {
     const { hcItems } = this.state;
     return (
       <div className="Home-Page">
-        <Collapse>
-          <Panel header="Multimodal Communications" key="1">
-            <ScoreTable
-              hcItems={hcItems['MC']}
-            />
-          </Panel>
-          <Panel header="Empirical Analyses" key="2">
-            <ScoreTable
-              hcItems={hcItems['EA']}
-            />
-          </Panel>
-          <Panel header="Formal Analyses" key="3">
-            <ScoreTable
-              hcItems={hcItems['FA']}
-            />
-          </Panel>
-          <Panel header="Complex Systems" key="4">
-            <ScoreTable
-              hcItems={hcItems['CS']}
-            />
-          </Panel>
-        </Collapse>
+
+        {hcItems ?
+          <Collapse>
+            <Panel header="Multimodal Communications" key="1">
+              <ScoreTable
+                hcItems={hcItems['MC']}
+              />
+            </Panel>
+            <Panel header="Empirical Analyses" key="2">
+              <ScoreTable
+                hcItems={hcItems['EA']}
+              />
+            </Panel>
+            <Panel header="Formal Analyses" key="3">
+              <ScoreTable
+                hcItems={hcItems['FA']}
+              />
+            </Panel>
+            <Panel header="Complex Systems" key="4">
+              <ScoreTable
+                hcItems={hcItems['CS']}
+              />
+            </Panel>
+          </Collapse>
+        :
+          <div>
+            <h2>Do NOT Reload!</h2>
+            <div>Querying data from ALF, this will take 2-5 minutes.</div>
+          </div>
+        }
       </div>
     );
   }

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Route, Redirect } from 'react-router-dom';
+import { Route, withRouter } from 'react-router-dom';
 import { instanceOf } from 'prop-types';
 import { withCookies, Cookies } from 'react-cookie';
 
@@ -22,10 +22,13 @@ class App extends Component {
     super(props);
 
     this.state = {
-      id: Number(cookies.get('id')) || '',
+      id: (cookies.get('id') ? Number(cookies.get('id')) : ''),
       token: cookies.get('token') || ''
     };
+  }
 
+  componentDidMount() {
+    const { cookies } = this.props;
 
     // check token and user id, if invalid, remove cookies and redirect to login
     if (this.state.id !== '' && this.state.token !== '') {
@@ -42,20 +45,39 @@ class App extends Component {
     }
   }
 
-  redirectLogin = () => {
-    if (this.state.id === '' || this.state.token === '') {
-      return <Redirect to='/login' />
+  componentDidUpdate(prevProps) {
+    if (this.props.location !== prevProps.location) {
+      this.loadStateFromCookies();
     }
+  }
+
+
+  loadStateFromCookies() {
+    const { cookies } = this.props;
+    this.setState({
+      id: (cookies.get('id') ? Number(cookies.get('id')) : ''),
+      token: cookies.get('token') || ''
+    })
   }
 
   render() {
     const { id, token } = this.state;
+
+    if (this.state.id === '' || this.state.token === '') {
+      if (this.props.location.pathname !== '/login') {
+        if (!(this.props.location.state && this.props.location.state.id && this.props.location.state.token)) {
+          this.props.history.push('/login');
+        }
+      }
+    }
+
     return (
       <div className="App">
-        {this.redirectLogin()}
-        <Route exact path='/' render={() => (
-          <HomePage id={id} token={token} />
-        )} />
+        <Route exact path='/' render={() => {
+          if (id !== '' && token !== '') {
+            return <HomePage id={id} token={token} />
+          }
+        }} />
         <Route exact path='/login' render={() => (
           <LoginPage />
         )} />
@@ -64,4 +86,4 @@ class App extends Component {
   }
 }
 
-export default withCookies(App);
+export default withCookies(withRouter(App));

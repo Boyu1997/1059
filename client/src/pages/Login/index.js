@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Redirect } from 'react-router-dom';
+import { withRouter } from 'react-router-dom';
 import { instanceOf } from 'prop-types';
 import { withCookies, Cookies } from 'react-cookie';
 
@@ -32,14 +32,25 @@ class LoginPage extends Component {
   handleSubmit = (event) => {
     event.preventDefault();
 
-    getUserId(this.state.token).then((data) => {
+    const token = this.state.token;
+
+    getUserId(token).then((data) => {
       if (data.user) {
-        getUserInfo(this.state.token, data['user']).then((data) => {
+        getUserInfo(token, data['user']).then((data) => {
           const { cookies } = this.props;
           if (window.confirm(`Are you ${data['last-name']} ${data['first-name']}?`)) {
             cookies.set('id', data.id);
-            cookies.set('token', this.state.token);
-            this.setState({ redirectHome: true })
+            cookies.set('token', token);
+
+
+            // redirect to home page
+            this.props.history.push({
+              pathname: '/',
+              state: {
+                id: data.id,
+                token: token
+              }
+            });
           }
         })
       }
@@ -49,16 +60,9 @@ class LoginPage extends Component {
     });
   }
 
-  redirectHome = () => {
-    if (this.state.redirectHome) {
-      return <Redirect to='/' />
-    }
-  }
-
   render() {
     return (
       <div className="Login-Page">
-        {this.redirectHome()}
         <form onSubmit={this.handleSubmit}>
           <label>
             Token:
@@ -71,4 +75,4 @@ class LoginPage extends Component {
   }
 }
 
-export default withCookies(LoginPage);
+export default withCookies(withRouter(LoginPage));
