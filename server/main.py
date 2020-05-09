@@ -19,9 +19,9 @@ def main(request):
         response = None
 
         if request.args['type'] == "getUserId":
-            url = "https://seminar.minerva.kgi.edu/api/v1/outcome-index-item?hc-item=3634"
+            url = "https://seminar.minerva.kgi.edu/api/v1/outcome-index-item?hc-item=3976"
             response = requests.get(url, headers={'Authorization': "Token {:s}".format(request.args['token'])})
-            
+
         if request.args['type'] == "getUserInfo":
             if 'id' in request.args:
                 url = "https://seminar.minerva.kgi.edu/api/v1/users/{:s}".format(request.args['id'])
@@ -36,7 +36,7 @@ def main(request):
             response = requests.get(url, headers={'Authorization': "Token {:s}".format(request.args['token'])})
 
         if request.args['type'] == "getHcScores":
-            url = "https://seminar.minerva.kgi.edu/api/v1/hc-index-items?outcomeType=hc"
+            url = "https://seminar.minerva.kgi.edu/api/v1/outcome-index-items?outcomeType=hc"
             response = requests.get(url, headers={'Authorization': "Token {:s}".format(request.args['token'])})
 
         if request.args['type'] == "getHcPerformances":
@@ -55,7 +55,7 @@ def main(request):
                 # try url variation 1
                 url = "https://seminar.minerva.kgi.edu/api/v1/class/{:s}/class_edit_pag".format(request.args['id'])
                 response = requests.get(url, headers={'Authorization': "Token {:s}".format(request.args['token'])})
-                
+
                 # try url variation 2
                 if response.status_code == 404:
                     url = "https://seminar.minerva.kgi.edu/api/v1/classes/{:s}/class_edit_page".format(request.args['id'])
@@ -64,7 +64,7 @@ def main(request):
                 # if all url is incorrect
                 if response.status_code == 404:
                     response = None
-        
+
         # handle main function return
         if response != None:
             response = flask.jsonify(response.json())
