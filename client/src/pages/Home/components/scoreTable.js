@@ -31,7 +31,7 @@ class ScoreTable extends Component {
       }
     ]
   }
-  
+
   componentDidMount () {
     const { hcItems } = this.props;
     let data = [];
@@ -40,7 +40,7 @@ class ScoreTable extends Component {
       data.push({
         'hc-item': item['hc-item'],
         'hashtag': item['hashtag'],
-        'mean': item['mean'].toFixed(2),
+        'mean': item['mean']==null ? 'N/A' : item['mean'].toFixed(2),
         'x': item['x'],
         'transfer-score': item['transfer-score'].toFixed(2),
       })
@@ -57,7 +57,7 @@ class ScoreTable extends Component {
           rowKey="hc-item"
           dataSource={data}
           columns={column}
-          pagination={false} 
+          pagination={false}
         />;
       </div>
     );
