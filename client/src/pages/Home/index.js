@@ -2,9 +2,11 @@ import React, { Component } from 'react';
 
 import { getHcItems, getHcScores, getAllSections, getHcPerformances } from '../../services/minervaApi.js';
 import { calculatePerformance } from '../../services/hcCalculation';
+import { getOverallScore } from './services/getOverallScore.js';
 
 import { Collapse } from 'antd';
 
+import OverviewTable from './components/overviewTable.js';
 import ScoreTable from './components/scoreTable.js';
 
 import './styles.css';
@@ -55,7 +57,7 @@ class HomePage extends Component {
           Object.keys(joinTable).forEach((key, index) => {
             Object.assign(joinTable[key], {'performances': performances[index]});
           });
-          
+
           // convert to list and keep only useful info
           let hcList = [];
           Object.keys(joinTable).forEach(key => {
@@ -69,7 +71,7 @@ class HomePage extends Component {
               return calculatePerformance(this.props.token, performance, hc['hashtag'], hc['cornerstone-code'], this.state.sections);
             }));
           })).then((performances) => {
-            
+
             // replace new performance info to table
             hcList.forEach((hc, index) => {
               hc['performances'] = performances[index];
@@ -95,7 +97,7 @@ class HomePage extends Component {
               hc['transfer-score'] = 1 + 4 / Math.pow((1 + Math.exp(-alpha * (x - mu * n))), v);
               hc['x'] = x
             });
-  
+
             // convert table into
             let hcItems = {
               "CS": [],
@@ -103,7 +105,7 @@ class HomePage extends Component {
               "FA": [],
               "MC": []
             };
-  
+
             hcList.forEach(hc => {
               hcItems[hc['cornerstone-code']].push({
                 'cornerstone-code': hc['cornerstone-code'],
@@ -121,7 +123,10 @@ class HomePage extends Component {
             });
 
             // set state and store cache
-            this.setState({ hcItems: hcItems });
+            this.setState({
+              hcItems: hcItems,
+              overallScore: getOverallScore(hcItems)
+            });
             sessionStorage.setItem('hcItems', JSON.stringify(hcItems));
 
           });
@@ -130,34 +135,50 @@ class HomePage extends Component {
     }
   }
 
+  componentDidMount() {
+    this.setState({
+      overallScore: getOverallScore(this.state.hcItems)
+    })
+  }
+
   render() {
-    const { hcItems } = this.state;
+    const { overallScore, hcItems } = this.state;
     return (
       <div className="Home-Page">
 
         {hcItems ?
-          <Collapse>
-            <Panel header="Multimodal Communications" key="1">
-              <ScoreTable
-                hcItems={hcItems['MC']}
+          <div>
+            {overallScore ?
+              <OverviewTable
+                overallScore={overallScore}
               />
-            </Panel>
-            <Panel header="Empirical Analyses" key="2">
-              <ScoreTable
-                hcItems={hcItems['EA']}
-              />
-            </Panel>
-            <Panel header="Formal Analyses" key="3">
-              <ScoreTable
-                hcItems={hcItems['FA']}
-              />
-            </Panel>
-            <Panel header="Complex Systems" key="4">
-              <ScoreTable
-                hcItems={hcItems['CS']}
-              />
-            </Panel>
-          </Collapse>
+              :
+              <span></span>
+            }
+
+            <Collapse>
+              <Panel header="Multimodal Communications" key="1">
+                <ScoreTable
+                  hcItems={hcItems['MC']}
+                />
+              </Panel>
+              <Panel header="Empirical Analyses" key="2">
+                <ScoreTable
+                  hcItems={hcItems['EA']}
+                />
+              </Panel>
+              <Panel header="Formal Analyses" key="3">
+                <ScoreTable
+                  hcItems={hcItems['FA']}
+                />
+              </Panel>
+              <Panel header="Complex Systems" key="4">
+                <ScoreTable
+                  hcItems={hcItems['CS']}
+                />
+              </Panel>
+            </Collapse>
+          </div>
         :
           <div>
             <h2>Do NOT Reload!</h2>
